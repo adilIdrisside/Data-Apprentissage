@@ -3,7 +3,7 @@
 
 #Analyse préliminaire
 tab=read.table('usa_indicators.txt', header = TRUE, sep=";")
-#View(tab)
+View(tab)
 #Le nombre d'observations est plus petit que le nombre d'indicateurs, donc le modèle de est
 #régression est compliqué.
 
@@ -11,7 +11,7 @@ tab=read.table('usa_indicators.txt', header = TRUE, sep=";")
 
 Y=tab[,22]
 years=tab[,1]
-View(years)
+#View(years)
 plot(years,Y,type='b')
 
 
@@ -27,12 +27,13 @@ help("lm.ridge")
 #2.
 resRidge1=lm.ridge(tab$EN.ATM.CO2E.KT~., data=tab[,2:110] , lambda=0)
 resRidge2=lm.ridge(tab$EN.ATM.CO2E.KT~., data=tab , lambda=100)
-summary(resRidge1)
-coefRidge = coef(resRidge1)
-View(coefRidge)
+
+coefRidge = coef(resRidge2)
+View(as.double(coefRidge))
+dim(as.numeric(coefRidge))
 
 help("sort")
-sorted=sort(coeff,decreasing=TRUE,coeff[1:5])
+sorted=sort(coefRidge,decreasing=TRUE,coefRidge[1:5])
 #indicateurs ne sont pas vraisemblables car si on voit la description des variables dans 
 #le fichier usa_indicators_info.txt on verra que ça na aucun rapport avec l'emission du
 #CO2.
@@ -53,12 +54,15 @@ plot(res1)
 which.min(coefRidge)
 
 #4.
-cor=cor(tab)
-Yridge=as.matrix(tab)%*%as.vector(coefRidge)
+X = as.matrix(tab)
+X = t(X)
 
-correlated=cor(tab)
-as.matrix(correlated)
-#Yridge=as.matrix(res)%*%as.vector(coefRidge)
+
+Yridge=t(as.matrix(X))%*%Y
+dim (t(X))
+dim (coefRidge)
+
+View(Yridge)
 
 # Régression Lasslo
 
@@ -66,6 +70,17 @@ as.matrix(correlated)
 library(lars)
 #6.
 help(lars)
-Y=tab[,22]
-lars(correlated,Y,type="lasso")
 
+Y=tab[,22]
+resLasso=lars(as.matrix(tab),Y,type="lasso")
+plot(resLasso)
+plot(resLasso$lambda,type='b')
+
+#7.
+coefficient=predict.lars(resLasso,X,type="coefficients",mode="lambda",s=0)
+
+#8.
+
+a=predict.lars(resLasso,as.matrix(X),type="coefficients",mode="lambda",s=0.02)
+b=predict.lars(resLasso,as.matrix(X),type="coefficients",mode="lambda",s=0.04)
+c=predict.lars(resLasso,as.matrix(X),type="coefficients",mode="lambda",s=0.06)
