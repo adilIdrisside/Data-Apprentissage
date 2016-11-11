@@ -30,7 +30,7 @@ print(resk$withinss)
 # la dispersion intra-cluster des differnts cluster
 print(resk$betweenss)
 # la dispersion entre les differernts clusters
-
+help(coordinate)
 #5.
 # Pour k=2
 r_cluster=resk$cluster;
@@ -70,7 +70,7 @@ plot(X)
 mat = X[,-1]
 corr=cor(mat)
 View(corr)
-
+# On en conculs que les varibles sont corrélées.
 #############################################################################################
 
 #. Réduction de dimension par ACP.
@@ -99,21 +99,49 @@ library(ade4)
 matXY=dudi.pca(mat,row.w = rep(1, nrow(mat))/nrow(mat), col.w = rep(1, ncol(mat)),center = TRUE, scale = TRUE,scannf = TRUE, nf = 2)
 s.corcircle(mat)
 colmean=colMeans(mat)
+p=cumsum(res$sdev)/sum(res$sdev)
+
+for (i in 1:6){
+  if(p[i]>=0.95){ 
+    print(i);
+    break;
+  }
+}
+# Pour les 95% de la variance on garde les 5 premières composantes 
+for (j in 1:6){
+  if(p[j]>=0.98){ 
+    print(j);
+    break;
+  }
+}
+#pour les 98% de la variance on garde les 5 premières composantes
 
 #6.
-#biplot(mat,colmea)
+biplot(res$x[,1:2], res$x[,2:3]) 
+x11()
 #############################################################################################
 
 #. Classification non supervisée
 
 #7. 
-Z = as.matrix("cardata.txt",sep=";", header=1)
-Y=as.vector(Z)
+Z = as.matrix(read.table("cardata.txt",sep=";", header=1))
+Y = Z[,-1]
+
 cardata_resk1 = kmeans(Y,center=1)
 cardata_resk2 = kmeans(Y,center=2)
 cardata_resk3 = kmeans(Y,center=3)
 cardata_resk4 = kmeans(Y,center=4)
 
 #8.
+plot(res)
+#############################################################################################
+
+#1. 
+library(nFactors)
+ev <- res$sdev^2
+valpr = as.vector(ev/sum(ev))
+# L'éboulis des valeurs propres
+
+plot(valpr,type="lines")
 
 cat("--FIN--")
